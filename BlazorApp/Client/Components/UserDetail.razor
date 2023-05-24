@@ -1,0 +1,108 @@
+﻿@page "/fetchjobSeekerdetails"
+@using BlazorApp.Bll.Models
+@inject HttpClient Http
+<h1>JobSeeker Data</h1>
+<p>Blazor CRUD operation</p>
+<div class="row">
+    <div class="col-md-6">
+        <a href='/jobseeker/add' class="btn btn-primary" role="button">
+            <i class="fas fa-jobSeeker-plus"></i>
+            Add JobSeeker
+        </a>
+    </div>
+    <div class="input-group col">
+        <input type="text" class="form-control" placeholder="Search jobSeeker by name"
+               @bind="SearchString" @bind:event="oninput" @onkeyup="FilterUser" />
+        @if (SearchString.Length > 0)
+        {
+            <div class="input-group-append">
+                <button class="btn btn-danger" @onclick="ResetSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+<br />
+@if (JobSeekerList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Cell No</th>
+                <th>E-mail</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var jobSeeker in JobSeekerList)
+            {
+                <tr>
+                    <td>@jobSeeker.Id</td>
+                    <td>@jobSeeker.FullName</td>
+                    <td>@jobSeeker.Address</td>
+                    <td>@jobSeeker.CellNumber</td>
+                    <td>@jobSeeker.Email</td>
+                    <td>
+                        <a href='/jobSeeker/edit/@jobSeeker.Id' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                        <a href='/jobSeeker/delete/@jobSeeker.Id' class="btn btn-outline-danger" role="button">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+@code {
+    protected List<JobSeeker> JobSeekerList { get; set; } = new();
+    protected List<JobSeeker> SearchJobSeekerData { get; set; } = new();
+    protected JobSeeker JobSeeker { get; set; } = new();
+    protected string SearchString { get; set; } = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetJobSeekers();
+    }
+    protected async Task GetJobSeekers()
+    {
+        var jobSeekerList = await Http.GetFromJsonAsync<List<JobSeeker>>("api/JobSeeker/GetJobSeekers");
+        if (jobSeekerList == null)
+        {
+            return;
+        }
+
+        JobSeekerList = jobSeekerList;
+        SearchJobSeekerData = JobSeekerList;
+    }
+    protected void FilterUser()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            JobSeekerList = SearchJobSeekerData
+                .Where(x => x.FullName.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList();
+        }
+        else
+        {
+            JobSeekerList = SearchJobSeekerData;
+        }
+    }
+    protected void DeleteConfirm(long Id)
+    {
+        JobSeeker = JobSeekerList.FirstOrDefault(x => x.Id == Id);
+    }
+    public void ResetSearch()
+    {
+        SearchString = string.Empty;
+        JobSeekerList = SearchJobSeekerData;
+    }
+}

@@ -1,0 +1,51 @@
+﻿@page "/jobseeker/delete/{JobSeekerId:int}"
+@using BlazorApp.Bll.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<h2>Delete JobSeeker</h2>
+<br />
+<div class="form-group">
+    <h4>Do you want to delete this jobSeeker?</h4>
+    <table class="table">
+        <tbody>
+        <tr>
+            <td>Name</td>
+            <td>@_jobSeeker.FullName</td>
+        </tr>
+        <tr>
+            <td>Address</td>
+            <td>@_jobSeeker.Address</td>
+        </tr>
+        <tr>
+            <td>Cell No</td>
+            <td>@_jobSeeker.CellNumber</td>
+        </tr>
+        <tr>
+            <td>E-mail</td>
+            <td>@_jobSeeker.Email</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="form-group">
+    <input type="submit" value="Delete" @onclick="(async () => await RemoveJobSeeker(_jobSeeker.Id))" class="btn btn-danger" />
+    <input type="submit" value="Cancel" @onclick="(() => Cancel())" class="btn btn-warning" />
+</div>
+@code {
+    [Parameter]
+    public int JobSeekerId { get; set; }
+    JobSeeker? _jobSeeker = new JobSeeker();
+    protected override async Task OnInitializedAsync()
+    {
+        _jobSeeker = await Http.GetFromJsonAsync<JobSeeker>("/api/JobSeeker/GetJobSeeker" + Convert.ToInt32(JobSeekerId));
+    }
+    protected async Task RemoveJobSeeker(long userID)
+    {
+        await Http.DeleteAsync("api/JobSeeker/DeleteJobSeeker" + userID);
+        NavigationManager.NavigateTo("/fetchjobSeekerdetails");
+    }
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/fetchjobSeekerdetails");
+    }
+}

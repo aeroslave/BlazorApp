@@ -1,0 +1,11 @@
+/.vs
+/.idea
+bin
+obj
+Logs
+*.suo
+*.user
+.vscode
+.vs
+.DS_Store
+Nuget.Config
