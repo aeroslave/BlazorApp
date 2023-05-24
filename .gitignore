@@ -7,5 +7,6 @@ Logs
 *.user
 .vscode
 .vs
+.bak
 .DS_Store
 Nuget.Config
