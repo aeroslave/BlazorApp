@@ -10,4 +10,8 @@
     <ProjectReference Include="..\BlazorApp.Bll\BlazorApp.Bll.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

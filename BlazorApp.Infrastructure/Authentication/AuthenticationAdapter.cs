@@ -1,20 +1,21 @@
-﻿using BlazorApp.Application.Interfaces;
-using BlazorApp.Application.RequestModels;
-using BlazorApp.Infrastructure.Common;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using BlazorApp.Application.Interfaces;
+using BlazorApp.Application.RequestModels;
 using BlazorApp.Bll.Models;
+using BlazorApp.Infrastructure.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BlazorApp.Infrastructure.Authentication;
 
 public class AuthenticationAdapter : IAuthenticationAdapter
 {
-    private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
 
     public AuthenticationAdapter(ApplicationDbContext context, IConfiguration configuration)
     {
@@ -25,9 +26,7 @@ public class AuthenticationAdapter : IAuthenticationAdapter
     public async Task<string> RegisterUser(RegisterRequest request)
     {
         if (_context.Users.Any(it => it.Login == request.Login))
-        {
             throw new InfrastructureException($"User with login {request.Login} already exist!");
-        }
 
         //Проверять пароль на сложность.
 
@@ -72,7 +71,8 @@ public class AuthenticationAdapter : IAuthenticationAdapter
             new(ClaimTypes.Role, user.Role)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!));
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value!));
 
         var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
@@ -82,5 +82,33 @@ public class AuthenticationAdapter : IAuthenticationAdapter
             signingCredentials: cred);
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
+    public IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
+    {
+        var claims = new List<Claim>();
+        var payload = jwt.Split('.')[1];
+
+        var jsonBytes = ParseBase64WithoutPadding(payload);
+
+        var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+        if (keyValuePairs != null)
+            claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString() ?? string.Empty)));
+        return claims;
+    }
+
+    private static byte[] ParseBase64WithoutPadding(string base64)
+    {
+        switch (base64.Length % 4)
+        {
+            case 2:
+                base64 += "==";
+                break;
+            case 3:
+                base64 += "=";
+                break;
+        }
+
+        return Convert.FromBase64String(base64);
     }
 }
