@@ -19,6 +19,8 @@ public class JobSeekerConfiguration : IEntityTypeConfiguration<JobSeeker>
 
         builder.Property(j => j.Email).HasMaxLength(50);
 
+        builder.Property(j => j.Photo);
+
         builder.Property(j => j.UserId).HasColumnName("UserId");
 
         builder.HasOne<User>().WithOne().HasForeignKey<JobSeeker>(j => j.UserId);

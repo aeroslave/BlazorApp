@@ -68,10 +68,12 @@ else
     protected List<JobSeeker> SearchJobSeekerData { get; set; } = new();
     protected JobSeeker JobSeeker { get; set; } = new();
     protected string SearchString { get; set; } = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await GetJobSeekers();
     }
+
     protected async Task GetJobSeekers()
     {
         var jobSeekerList = await Http.GetFromJsonAsync<List<JobSeeker>>("api/JobSeeker/GetJobSeekers");
@@ -83,6 +85,7 @@ else
         JobSeekerList = jobSeekerList;
         SearchJobSeekerData = JobSeekerList;
     }
+
     protected void FilterUser()
     {
         if (!string.IsNullOrEmpty(SearchString))
@@ -96,10 +99,12 @@ else
             JobSeekerList = SearchJobSeekerData;
         }
     }
+
     protected void DeleteConfirm(long Id)
     {
         JobSeeker = JobSeekerList.FirstOrDefault(x => x.Id == Id);
     }
+
     public void ResetSearch()
     {
         SearchString = string.Empty;

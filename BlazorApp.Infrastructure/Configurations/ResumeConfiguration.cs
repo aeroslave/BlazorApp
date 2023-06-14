@@ -13,6 +13,7 @@ public class ResumeConfiguration : IEntityTypeConfiguration<Resume>
         builder.Property(r => r.Id).HasColumnName("Id");
 
         builder.Property(r => r.Description);
+        builder.Property(r => r.File);
 
         builder.Property(i => i.UserId).HasColumnName("UserId").IsRequired();
         builder.HasOne<JobSeeker>().WithMany().HasForeignKey(r => r.UserId);

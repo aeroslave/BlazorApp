@@ -5,7 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp.Infrastructure.Repositories;
 
-public class JobSeekersRepository : IRepository<JobSeeker>
+public interface IJobSeekerRepository : IRepository<JobSeeker>
+{
+    Task<List<Resume>> GetResumes(int id);
+}
+
+public class JobSeekersRepository : IJobSeekerRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -36,6 +41,12 @@ public class JobSeekersRepository : IRepository<JobSeeker>
     {
         await _dbContext.JobSeekers.AddAsync(jobSeeker);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<List<Resume>> GetResumes(int id)
+    {
+        var resumes = _dbContext.Resumes.Where(it => it.UserId == id);
+        return await resumes.ToListAsync();
     }
 
     public async Task Update(JobSeeker jobSeeker)

@@ -1,4 +1,5 @@
 using BlazorApp.Infrastructure;
+using BlazorApp.Server.SwaggerFilters;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -16,8 +17,9 @@ builder.Services.AddSwaggerGen(options =>
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
     });
-
+    
     options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.OperationFilter<FileUploadOperationFilter>();
 });
 
 builder.Services.AddRazorPages();

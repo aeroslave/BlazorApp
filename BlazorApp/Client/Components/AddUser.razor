@@ -2,12 +2,26 @@
 @page "/jobseeker/edit/{JobSeekerId:int}"
 @using Microsoft.AspNetCore.Components
 @using BlazorApp.Bll.Models
+@using System.Net.Mime
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 <h1>@Title JobSeeker</h1>
 <hr />
 <EditForm Model="@JobSeeker" OnValidSubmit="SaveJobSeeker">
     <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="Name" class="form-label">Name</label>
+        <div class="col-md-4">
+            <img src="@("api/JobSeeker/GetPhoto" + JobSeekerId)" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Add Photo</label>
+        <div class="col-md-4">
+            <InputFile OnChange="@LoadFiles" />
+        </div>
+    </div>
+
     <div class="mb-3">
         <label for="Name" class="form-label">Name</label>
         <div class="col-md-4">
@@ -23,29 +37,33 @@
         <ValidationMessage For="@(() => JobSeeker.Address)" />
     </div>
     <div class="mb-3">
-        <label for="Cellnumber" class="form-label">Cell No</label>
+        <label for="CellNumber" class="form-label">Cell No</label>
         <div class="col-md-4">
             <InputText class="form-control" @bind-Value="JobSeeker.CellNumber" />
         </div>
         <ValidationMessage For="@(() => JobSeeker.CellNumber)" />
     </div>
     <div class="mb-3">
-        <label for="Emailid" class="form-label">E-mail</label>
+        <label for="Email" class="form-label">E-mail</label>
         <div class="col-md-4">
             <InputText class="form-control" @bind-Value="JobSeeker.Email" />
         </div>
         <ValidationMessage For="@(() => JobSeeker.Email)" />
     </div>
+    
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Save</button>
         <button class="btn btn-light" @onclick="Cancel">Cancel</button>
     </div>
 </EditForm>
+
 @code {
     [Parameter]
     public int JobSeekerId { get; set; }
     protected string Title = "Add";
     protected JobSeeker JobSeeker = new();
+    protected byte[] PhotoBytes = { };
+
     protected override async Task OnParametersSetAsync()
     {
         if (JobSeekerId != 0)
@@ -54,8 +72,10 @@
             JobSeeker = await Http.GetFromJsonAsync<JobSeeker>("api/JobSeeker/GetJobSeeker" + JobSeekerId);
         }
     }
+
     protected async Task SaveJobSeeker()
     {
+        JobSeeker.Photo = PhotoBytes;
         if (JobSeeker.Id != 0)
         {
             await Http.PutAsJsonAsync("api/JobSeeker/UpdateJobSeeker", JobSeeker);
@@ -66,8 +86,22 @@
         }
         Cancel();
     }
+
     public void Cancel()
     {
         NavigationManager.NavigateTo("/fetchjobSeekerdetails");
+    }
+    
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        if (!e.File.ContentType.Contains("image")) 
+        {
+            return;
+        }
+
+        var memoryStream = new MemoryStream();
+        await e.File.OpenReadStream().CopyToAsync(memoryStream);
+
+        PhotoBytes = memoryStream.ToArray();
     }
 }

@@ -49,7 +49,7 @@ public static class Inject
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IRepository<JobSeeker>, JobSeekersRepository>()
+        services.AddScoped<IJobSeekerRepository, JobSeekersRepository>()
                 .AddScoped<IRepository<Vacancy>, VacancyRepository>()
                 .AddScoped<IRepository<Resume>, ResumeRepository>()
                 .AddScoped<IRepository<Interview>, InterviewRepository>();

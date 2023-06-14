@@ -6,4 +6,6 @@ public class Resume : Entity
     
     //Вместо описания может быть ссылка на файл
     public string Description { get; set; } = string.Empty;
+
+    public byte[] File { get; set; }
 }
